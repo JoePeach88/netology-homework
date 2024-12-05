@@ -34,7 +34,7 @@
 
 
 ## Решение
-*здесь будет ссылка на этот коммит, но этого коммита пока что нет :(*
+[Ссылка на коммит с gitignore`ом](https://github.com/YeezyWhy/netology-homework-pattern/commit/371bc366815960ca0ec9d9bfacaada2eed06bcf0)
 
 
 ## Задание 3
