@@ -1,9 +1,19 @@
-# Домашнее задачение по теме "Название темы". Гаев Егор
+# Домашние задания по курсу "[Системный администратор](https://netology.ru/programs/sysadmin)"
 
-## Задание 1
+## Оглавление
 
+### [Резервное копирование](https://github.com/YeezyWhy/netology-homework/tree/backup)
 
+### [Базы данных, их типы](https://github.com/YeezyWhy/netology-homework/tree/db)
 
+### [Git](https://github.com/YeezyWhy/netology-homework/tree/git)
 
-## Решение
+### [Кластеризация и балансировка нагрузки](https://github.com/YeezyWhy/netology-homework/tree/haproxy)
 
+### [Disaster recovery и Keepalived](https://github.com/YeezyWhy/netology-homework/tree/keepalived)
+
+### [Кеширование Redis/memcached](https://github.com/YeezyWhy/netology-homework/tree/redis)
+
+### [Zabbix. Часть 1](https://github.com/YeezyWhy/netology-homework/tree/zabbix-part-1)
+
+### [Zabbix. Часть 2](https://github.com/YeezyWhy/netology-homework/tree/zabbix-part-2)
