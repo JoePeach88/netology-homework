@@ -17,7 +17,7 @@ services:
     ports:
       - "5044:5044"
     volumes:
-      - ./pipeline:/usr/share/logstash/pipeline
+      - ./pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
 
   kibana:
     container_name: kibana
@@ -33,10 +33,10 @@ services:
     container_name: filebeat
     image: elastic/filebeat:7.17.9
     entrypoint: "filebeat -e -strict.perms=false"
+    user: root
     volumes:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/log:/var/log:ro
+      - /var/lib/docker:/var/lib/docker:ro
     depends_on:
       - elasticsearch
 
