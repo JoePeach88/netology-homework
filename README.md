@@ -6,6 +6,8 @@
 
 ### [Базы данных, их типы](https://github.com/YeezyWhy/netology-homework/tree/db)
 
+### [Базы данных](https://github.com/YeezyWhy/netology-homework/tree/db-2)
+
 ### [ELK](https://github.com/YeezyWhy/netology-homework/tree/elk)
 
 ### [Git](https://github.com/YeezyWhy/netology-homework/tree/git)
