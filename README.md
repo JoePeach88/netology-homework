@@ -25,3 +25,5 @@
 ### [DDL/DML](https://github.com/YeezyWhy/netology-homework/tree/ddl-dml)
 
 ### [SQL. Часть 1](https://github.com/YeezyWhy/netology-homework/tree/sql-part-1)
+
+### [SQL. Часть 2](https://github.com/YeezyWhy/netology-homework/tree/sql-part-2)
