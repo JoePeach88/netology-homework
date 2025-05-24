@@ -21,3 +21,5 @@
 ### [Zabbix. Часть 1](https://github.com/YeezyWhy/netology-homework/tree/zabbix-part-1)
 
 ### [Zabbix. Часть 2](https://github.com/YeezyWhy/netology-homework/tree/zabbix-part-2)
+
+### [DDL/DML](https://github.com/YeezyWhy/netology-homework/tree/ddl-dml)
