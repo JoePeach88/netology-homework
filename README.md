@@ -29,3 +29,5 @@
 ### [SQL. Часть 2](https://github.com/YeezyWhy/netology-homework/tree/sql-part-2)
 
 ### [Индексы](https://github.com/YeezyWhy/netology-homework/tree/indexes)
+
+### [Уязвимости и атаки на информационные системы](https://github.com/YeezyWhy/netology-homework/tree/is-1)
