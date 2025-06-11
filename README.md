@@ -31,3 +31,5 @@
 ### [Индексы](https://github.com/YeezyWhy/netology-homework/tree/indexes)
 
 ### [Уязвимости и атаки на информационные системы](https://github.com/YeezyWhy/netology-homework/tree/is-1)
+
+### [Защита хоста](https://github.com/YeezyWhy/netology-homework/tree/is-2)
