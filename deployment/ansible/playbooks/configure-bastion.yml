@@ -1,0 +1,25 @@
+- hosts: bastion
+  name: Bastion | Setup
+  tags: bastion
+  tasks:
+    - name: Copy ansible key
+      ansible.builtin.copy:
+        src: ../ansible.key
+        dest: /home/ansible/.ssh/ansible
+        owner: ansible
+        group: ansible
+        mode: '0600'
+    - name: Create config
+      ansible.builtin.copy:
+        dest: /home/ansible/.ssh/config
+        content: |
+          Host *
+              User ansible
+              IdentityFile /home/ansible/.ssh/ansible
+        owner: ansible
+        group: ansible
+        mode: '0644'
+    - name: Restart ssh
+      ansible.builtin.service:
+        name: ssh
+        state: restarted

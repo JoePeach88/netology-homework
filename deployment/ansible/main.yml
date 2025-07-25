@@ -1,0 +1,15 @@
+---
+- hosts: all
+  gather_facts: no
+
+- name: deploy bastion
+  import_playbook: playbooks/configure-bastion.yml
+
+- name: deploy elastic
+  import_playbook: playbooks/configure-elk.yml
+
+- name: deploy webservers
+  import_playbook: playbooks/configure-webservers.yml
+
+- name: deploy zabbix
+  import_playbook: playbooks/configure-zabbix.yml

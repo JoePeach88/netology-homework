@@ -1,0 +1,7 @@
+---
+- hosts: webserver
+  name: Playbook to configure webserver
+  tags: web
+  roles:
+    - nginx
+    - filebeat

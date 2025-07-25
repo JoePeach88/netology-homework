@@ -1,0 +1,9 @@
+---
+- hosts: all
+  name: Playbook to configure zabbix on servers
+  become: true
+  gather_facts: true
+  tags:
+    - zabbix
+  roles:
+    - zabbix

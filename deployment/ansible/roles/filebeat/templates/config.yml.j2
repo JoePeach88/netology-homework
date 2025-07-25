@@ -1,0 +1,29 @@
+filebeat.config.modules.path: ${path.config}/modules.d/*.yml
+filebeat.inputs:
+  - type: filestream
+    id: nginx-access
+    enabled: true
+    paths:
+      - /var/log/nginx/access.log
+    multiline:
+      pattern: '^\s'
+      negate: true
+      match: after
+
+  - type: filestream
+    id: nginx-error
+    enabled: true
+    paths:
+      - /var/log/nginx/error.log
+    multiline:
+      pattern: '^\s'
+      negate: true
+      match: after
+output.elasticsearch:
+  hosts: ["https://{{ elastic_host }}:{{ elastic_port }}"]
+  username: "elastic"
+  password: "{{ manager_password }}"
+  ssl.verification_mode: none
+  index: "nginx-%{+yyyy.MM.dd}"
+setup.template.name: "nginx"
+setup.template.pattern: "nginx-*"

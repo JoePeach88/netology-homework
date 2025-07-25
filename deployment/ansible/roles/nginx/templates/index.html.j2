@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Netology Diplom</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 1.5rem;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+    .caption {
+      font-size: 3rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+    .subtext {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #ffd966;
+      text-shadow: 0 0 5px rgba(255, 217, 102, 0.7);
+      user-select: none;
+    }
+    .spinning-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      object-fit: cover;
+      animation: spin 5s linear infinite;
+    }
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @media (max-width: 600px) {
+      .caption {
+        font-size: 2rem;
+        padding: 1rem 1.5rem;
+      }
+      .subtext {
+        font-size: 1.2rem;
+      }
+      .spinning-image {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img class="spinning-image" alt="Random spinning image" />
+  <div class="caption">Diplom. Egor Gaev</div>
+  <div class="subtext">поставьте зачет пж</div>
+  <script>
+    (() => {
+      const images = [
+        "https://i.mycdn.me/getVideoPreview?id=5808551692896&idx=5&type=39&tkn=sJbSj3gEA7xb6kEYyfXjRbv_wrY&fn=vid_w",
+        "https://www.meme-arsenal.com/memes/7405448521e169c43ecb55043202fdb1.jpg"
+      ];
+      const spinningImage = document.querySelector(".spinning-image");
+      if (spinningImage) {
+        const randomIndex = Math.floor(Math.random() * images.length);
+        spinningImage.src = images[randomIndex];
+      }
+    })();
+  </script>
+</body>
+</html>

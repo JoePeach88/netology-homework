@@ -1,0 +1,7 @@
+#cloud-config
+users:
+  - name: ansible
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']  
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDjs1iJmRKvPPyLjMURt58O+C8mQluDwIhzfMW/7ztuLT309RR0Tc0e2bqSGqHvrcHU6HnlFxDVI1xow8y/NzN2GhQLClOeVF1mWd375pZzP91vv+OOOg53tkBj8foOTZAgzmitoQohKDih5DVKa90JZNwVAq26Y0ijEcscu6CWJilusOuAuFSssKPv1R/0Lw30wkVG3+RjJ65jEP6konIoJlIwW7xy4NJRQWJT0EO5cgl71d5/5/Fcbw9dOd1kEBJbNK2I6xsN080pcSOQhh/hHN7lykwCpTb7ykK/KZQnSNhWqxaJbv6TwzveoWqeO/V1qaP1e/ZgccaPzi8sJc/fKSjZh6GqVAnNTzNRAtLg9+LIrNgX+KnQiK5WBl2BKghjWK92XcJmTy77QF/Jp8VrMIHB+JgLed+E+TA5ZxtbLVVVCqgaF5QCQr9wiwmjWK01BY1brZCGGfZkxFYySnMuL/Y5/h2URlLKdw89hi2vots35vvKoHeX7lQlGy5OZr8= egor gaev@DESKTOP-IP3HB50

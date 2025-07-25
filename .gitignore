@@ -1,0 +1,7 @@
+.vscode
+.terraform*
+ansible.key
+key.json
+vault-password.password
+*.tfstate*
+ansible.sh

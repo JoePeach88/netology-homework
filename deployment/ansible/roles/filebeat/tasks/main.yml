@@ -1,0 +1,29 @@
+---
+- name: Filebeat | Install and configure Filebeat
+  block:
+    - name: Add Elasticsearch APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/8/ stable main"
+        filename: elastic-8.x
+        state: present
+        update_cache: yes
+
+    - name: Setup filebeat package
+      ansible.builtin.apt:
+        name: filebeat
+        state: present
+        update_cache: yes
+
+    - name: Deploy Filebeat configuration file
+      ansible.builtin.template:
+        src: config.yml.j2
+        dest: /etc/filebeat/filebeat.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart and enable Filebeat service
+      ansible.builtin.systemd:
+        name: filebeat
+        state: restarted
+        enabled: yes

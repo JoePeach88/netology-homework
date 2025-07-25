@@ -1,0 +1,302 @@
+---
+- name: Zabbix | Setup zabbix-agent2
+  tags: zabbix-agent
+  block:
+    - name: Set fact host ip
+      set_fact:
+        host_interface_ip: "{{ ansible_all_ipv4_addresses | select('search', '^10\\.') | list | first }}"
+        
+    - name: Download zabbix agent
+      ansible.builtin.get_url:
+        url: "https://repo.zabbix.com/zabbix/7.4/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+        dest: "/tmp/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+
+    - name: Setup zabbix release
+      ansible.builtin.apt:
+        deb: "/tmp/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+        state: present
+
+    - name: Update repos
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Setup zabbix-agent2
+      ansible.builtin.apt:
+        name: zabbix-agent2
+        state: present
+
+    - name: Update zabbix-agent2 config
+      block:
+        - name: Set Zabbix server in config
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^Server='
+            line: "Server={{ zabbix_server }}"
+            state: present
+
+        - name: Enable 10050 port of zabbix server
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^#? ?ListenPort'
+            line: "ListenPort=10050"
+
+        - name: Set active Zabbix server in config
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^ServerActive='
+            line: "ServerActive={{ zabbix_server }}"
+            state: present
+
+        - name: Exclude Hostname param
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: 'Hostname='
+            line: "#Hostname="
+            state: present
+
+        - name: Set HostnameItem param
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^#? ?HostnameItem='
+            line: "HostnameItem=system.hostname"
+            state: present
+
+        - name: Set Metadata param
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^#? ?HostMetadata='
+            line: "HostMetadata=managed-host-nginx"
+            state: present
+          when: ansible_fqdn in groups['webserver']
+
+        - name: Set HostInterface param
+          ansible.builtin.lineinfile:
+            path: /etc/zabbix/zabbix_agent2.conf
+            regexp: '^#? ?HostInterface='
+            line: "HostInterface={{ host_interface_ip }}"
+            state: present
+      when: ansible_fqdn != zabbix_server
+
+    - name: Setup logs path
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_agent2.conf
+        regexp: '^LogFile='
+        line: "LogFile=/var/log/zabbix/zabbix_agentd.log"
+        state: present
+
+    - name: Restart zabbix-agent2 service
+      ansible.builtin.systemd:
+        name: zabbix-agent2
+        state: restarted
+        enabled: yes
+  when: install_zabbix_agent == true
+
+- name: Zabbix | Setup zabbix-server and pgsql
+  tags: zabbix-server
+  block:
+    - name: Download Zabbix release package
+      ansible.builtin.get_url:
+        url: "https://repo.zabbix.com/zabbix/7.4/release/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+        dest: "/tmp/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+        mode: '0644'
+
+    - name: Install Zabbix release package
+      ansible.builtin.apt:
+        deb: "/tmp/zabbix-release_latest_7.4+ubuntu24.04_all.deb"
+        state: present
+
+    - name: Update apt cache and install required packages
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - postgresql
+          - zabbix-server-pgsql
+          - zabbix-frontend-php
+          - zabbix-agent2-plugin-postgresql
+          - zabbix-agent2
+          - php8.3-pgsql
+          - zabbix-nginx-conf
+          - zabbix-sql-scripts
+          - python3-psycopg2
+          - acl
+          - python3-bcrypt
+        state: present
+        update_cache: yes
+
+    - name: Start pgsql service
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: yes
+
+    - name: Setup PostgreSQL DB
+      become: true
+      become_user: postgres
+      block:
+        - name: Create user
+          community.general.postgresql_user:
+            name: "{{ zabbix_db }}"
+            password: "{{ zabbix_db_password }}"
+            state: present
+
+        - name: Create db
+          community.general.postgresql_db:
+            name: "{{ zabbix_db }}"
+            owner: "{{ zabbix_db }}"
+            state: present
+
+    - name: Import template to db
+      ansible.builtin.shell: "zcat /usr/share/zabbix/sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix"
+    
+    - name: Change admin password
+      ansible.builtin.shell: |
+        alias bcryptgen='python3 -c "import bcrypt, sys; print(bcrypt.hashpw(sys.argv[1].encode(), bcrypt.gensalt()).decode())"'
+        PASS=$(bcryptgen {{ pgsql_admin_password }})
+        sudo -u zabbix psql zabbix -c "UPDATE users SET passwd = '$PASS' WHERE username = 'Admin';"
+
+    - name: Change zabbix-server db password
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: "^#? DBPassword="
+        line: "DBPassword={{ zabbix_db_password }}"
+
+    - name: Get zabbix-server ip
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: "^#? ListenIP="
+        line: "ListenIP={{ zabbix_internal_ip }}"
+    
+    - name: Enable 10051 port of zabbix server
+      ansible.builtin.lineinfile:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '^#? ?ListenPort'
+        line: "ListenPort=10051"
+
+    - name: Copy nginx config
+      ansible.builtin.template:
+        src: zabbix-nginx.conf.j2
+        dest: /etc/zabbix/nginx.conf
+        mode: '0644'
+      
+    - name: Enable nginx config
+      file:
+        src: /etc/zabbix/nginx.conf
+        dest: /etc/nginx/sites-enabled/nginx.conf
+        state: link
+
+    - name: Remove default 
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      ignore_errors: yes
+
+    - name: Template zabbix php config
+      ansible.builtin.template:
+        src: zabbix-php.conf.j2
+        dest: /etc/zabbix/web/zabbix.conf.php
+        mode: '0644'
+
+    - name: Restart services
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      loop:
+        - nginx
+        - zabbix-server
+        - zabbix-agent2
+  when: install_zabbix_server == true
+
+- name: Zabbix | Hosts autoreg
+  tags: zabbix-server
+  block:
+    - name: Get Zabbix API authentication token
+      ansible.builtin.uri:
+        url: "http://{{ zabbix_server }}:8080/api_jsonrpc.php"
+        method: POST
+        body_format: json
+        body:
+          jsonrpc: "2.0"
+          method: "user.login"
+          params:
+            username: "Admin"
+            password: "{{ pgsql_admin_password }}"
+          id: 1
+        return_content: yes
+      register: auth_response
+
+    - name: Debug json
+      debug:
+        msg: "Json: {{ auth_response.json }}"
+
+    - name: Set Zabbix auth token fact
+      set_fact:
+        zabbix_auth_token: "{{ auth_response.json.result }}"
+
+    - name: Linux server autoreg
+      ansible.builtin.uri:
+        url: "http://{{ zabbix_server }}:8080/api_jsonrpc.php"
+        method: POST
+        body:
+          jsonrpc: "2.0"
+          method: "action.create"
+          params:
+            name: "Регистрация хостов по значению метаданных"
+            eventsource: "2"
+            filter:
+              evaltype: "2"
+              conditions:
+                - conditiontype: "24"
+                  operator: "2"
+                  value: "managed-host"
+            operations:
+              - operationtype: "4"
+                opgroup:
+                  - groupid: "2"
+              - operationtype: "6"
+                optemplate:
+                  - templateid: "10001"
+        headers:
+          Authorization: "Bearer {{ zabbix_auth_token }}"
+        body_format: json
+
+    - name: Create action
+      ansible.builtin.uri:
+        url: "http://{{ zabbix_server }}:8080/api_jsonrpc.php"
+        method: POST
+        body:
+          jsonrpc: "2.0"
+          method: "action.create"
+          params:
+            name: "Регистрация хостов nginx по значению метаданных"
+            eventsource: "2"
+            filter:
+              evaltype: "2"
+              conditions:
+                - conditiontype: "24"
+                  operator: "2"
+                  value: "managed-host-nginx"
+            operations:
+              - operationtype: "6"
+                optemplate:
+                  - templateid: "10266"
+        headers:
+          Authorization: "Bearer {{ zabbix_auth_token }}"
+        body_format: json
+
+    - name: Create manager user
+      ansible.builtin.uri:
+        url: "http://{{ zabbix_server }}:8080/api_jsonrpc.php"
+        method: POST
+        body:
+          jsonrpc: "2.0"
+          method: "user.create"
+          params:
+            username: "manager"
+            passwd: "{{ manager_password }}"
+            usrgrps:
+              - usrgrpid: "3"
+        headers:
+          Authorization: "Bearer {{ zabbix_auth_token }}"
+        body_format: json
+  when: install_zabbix_server == true

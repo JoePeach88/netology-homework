@@ -1,0 +1,79 @@
+---
+- hosts: elasticsearch
+  name: Playbook to configure Elsticsearch on servers
+  tags: elastic
+  roles:
+    - elasticsearch
+
+- hosts: kibana
+  name: Playbook to configure Kibana on servers
+  tags: kibana
+  roles:
+    - kibana
+
+- name: Configure Elasticsearch and Kibana integration
+  hosts:
+    - kibana
+    - elasticsearch
+  become: true
+  tags: elk
+  vars:
+    elastic_bin_dir: /usr/share/elasticsearch/bin
+    kibana_bin_dir: /usr/share/kibana/bin
+  tasks:
+    - name: Generate Elasticsearch enrollment token (run only on elastic_host)
+      ansible.builtin.command:
+        cmd: ./elasticsearch-create-enrollment-token -s kibana
+        chdir: "{{ elastic_bin_dir }}"
+      register: enrollment_token
+      when: inventory_hostname == elastic_fqdn
+
+    - name: Reset elastic user password (on elastic_host)
+      ansible.builtin.command:
+        cmd: /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -i -f
+      args:
+        stdin: |
+          y
+          {{ manager_password }}
+          {{ manager_password }}
+      when: inventory_hostname == elastic_fqdn
+
+    - name: Configure Kibana with enrollment token (on kibana_host)
+      ansible.builtin.shell: echo "{{ hostvars[elastic_fqdn].enrollment_token.stdout }}" | ./kibana-setup
+      args:
+        chdir: "{{ kibana_bin_dir }}"
+      when: inventory_hostname == kibana_fqdn
+
+    - name: Restart and enable Kibana service (on kibana_host)
+      ansible.builtin.service:
+        name: kibana
+        state: restarted
+        enabled: yes
+      when: inventory_hostname == kibana_fqdn
+
+    - name: Wait 60 seconds before creating Kibana data view
+      ansible.builtin.pause:
+        seconds: 60
+
+    - name: Create Kibana data view for Nginx logs
+      ansible.builtin.uri:
+        url: "http://{{ kibana_host }}:{{ kibana_port }}/api/data_views/data_view"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          kbn-xsrf: "string"
+          Authorization: "Basic {{ kibana_basic_auth }}"
+        body_format: json
+        body:
+          data_view:
+            title: "nginx-*"
+            name: "nginx-logs"
+            timeFieldName: "@timestamp"
+        status_code: 200,409
+      when: inventory_hostname == kibana_fqdn
+      register: create_data_view_response
+      ignore_errors: yes
+    
+    - name: Debug response from Kibana data view creation
+      debug:
+        var: create_data_view_response.json
