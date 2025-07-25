@@ -65,9 +65,8 @@
           ansible.builtin.lineinfile:
             path: /etc/zabbix/zabbix_agent2.conf
             regexp: '^#? ?HostMetadata='
-            line: "HostMetadata=managed-host-nginx"
+            line: "{{ 'HostMetadata=managed-host-nginx' if ansible_fqdn in groups['webserver'] else 'HostMetadata=managed-host' }}"
             state: present
-          when: ansible_fqdn in groups['webserver']
 
         - name: Set HostInterface param
           ansible.builtin.lineinfile:
