@@ -13,7 +13,7 @@
 
 ## Ресурсы доступные извне
 
-* [Zabbix](http://158.160.190.151:8080/zabbix.php?action=dashboard.view&dashboardid=1&from=now-30m&to=now&page=2) 
+* [Zabbix](http://158.160.190.151:8080/zabbix.php?action=dashboard.view&dashboardid=392&from=now-1h&to=now) 
 
 * [Kibana](http://84.201.147.61:5601/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:now-15m,to:now))&_a=(columns:!(),dataSource:(dataViewId:'7531fa3c-1d19-4b87-90bc-9cf231d6663d',type:dataView),filters:!(),interval:auto,query:(language:kuery,query:''),sort:!(!('@timestamp',desc))))
 
